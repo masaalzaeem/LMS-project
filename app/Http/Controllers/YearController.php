@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Year;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use App\Models\Year;
+use App\Models\Stage;
 
 class YearController extends Controller
 {
@@ -28,7 +30,7 @@ class YearController extends Controller
             'year' => 'required|string'
         ]);
 
-        $years = Year::where('year', 'like', '%' . $request->Year . '%')
+        $years = Year::where('year', 'like', '%' . $request->year . '%')
             ->get();
 
         if ($years->isNotEmpty()) {
@@ -44,29 +46,24 @@ class YearController extends Controller
     }
 
     //  add a new year
-    public function add(Request $request)
+    public function store(Request $request)
     {
-        // $user = Auth::user();
-
-        // if ($user->role != (1 || 2)) {
-        //     return response()->json(
-        //         ['error' => 'Unauthorized'],
-        //         403
-        //     );
-        // }
+        $user = Auth::user();
 
         $request->validate([
-            'year' => 'required|string'
+            'year' => 'required|string',
+            'stage' => 'required|string'
         ]);
 
-        $YearName = $request->Year;
-
-        $existingYear = Year::where('year', $YearName)
+        $year = Year::where('year', $request->year)
             ->first();
 
-        if (!$existingYear) {
+        if (!$year) {
+            $stage = Stage::where('stage', $request->stage)
+                ->first();
             $newYear = Year::create([
-                'Year' => $YearName
+                'year' => $request->year,
+                'stage_id' => $stage->id
             ]);
 
             return response()->json(
@@ -86,21 +83,15 @@ class YearController extends Controller
     {
         // $user = Auth::user();
 
-        // if ($user->role != (1 || 2)) {
-        //     return response()->json(
-        //         ['error' => 'Unauthorized'],
-        //         403
-        //     );
-        // }
-
         $request->validate([
-            'year' => 'required|exists:years,year',
-            'newYear' => 'required|string'
+            'year' => 'required|string|exists:years,year',
+            'stage' => 'required|string',
+            'newYear' => 'required|string',
+            'newStage' => 'required|string'
         ]);
 
         $year = Year::where('year', $request->year)
             ->first();
-        $newYear = $request->newYear;
 
         $newYear = Year::where('year', $request->newYear)
             ->first();
@@ -130,14 +121,14 @@ class YearController extends Controller
     // delete a year
     public function destroy(Request $request)
     {
-        // $user = Auth::user();
+        $user = Auth::user();
 
-        // if ($user->role != (1 || 2)) {
-        //     return response()->json(
-        //         ['error' => 'Unauthorized'],
-        //         403
-        //     );
-        // }
+        if ($user->role != (1 || 2)) {
+            return response()->json(
+                ['error' => 'Unauthorized'],
+                403
+            );
+        }
 
         $year = Year::where('Year', $request->Year)
             ->first();

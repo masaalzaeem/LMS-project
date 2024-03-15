@@ -49,16 +49,16 @@ class StageController extends Controller
     }
 
     //  Store a new stage or add to the seeder if it doesn't exist
-    public function add(Request $request)
+    public function store(Request $request)
     {
-        // $user = Auth::user();
+        $user = Auth::user();
 
-        // if ($user->role != (1 || 2)) {
-        //     return response()->json(
-        //         ['error' => 'Unauthorized'],
-        //         403
-        //     );
-        // }
+        if ($user->role != (1 || 2)) {
+            return response()->json(
+                ['error' => 'Unauthorized'],
+                403
+            );
+        }
 
         $request->validate([
             'stage' => 'required|string'
@@ -89,14 +89,14 @@ class StageController extends Controller
     //  update an existing stage
     public function update(Request $request)
     {
-        // $user = Auth::user();
+        $user = Auth::user();
 
-        // if ($user->role != (1 || 2)) {
-        //     return response()->json(
-        //         ['error' => 'Unauthorized'],
-        //         403
-        //     );
-        // }
+        if ($user->role != (1 || 2)) {
+            return response()->json(
+                ['error' => 'Unauthorized'],
+                403
+            );
+        }
 
         $request->validate([
             'stage' => 'required|exists:stages,stage',
@@ -135,14 +135,14 @@ class StageController extends Controller
     // delete a stage
     public function destroy(Request $request)
     {
-        // $user = Auth::user();
+        $user = Auth::user();
 
-        // if ($user->role != (1 || 2)) {
-        //     return response()->json(
-        //         ['error' => 'Unauthorized'],
-        //         403
-        //     );
-        // }
+        if ($user->role != (1 || 2)) {
+            return response()->json(
+                ['error' => 'Unauthorized'],
+                403
+            );
+        }
 
         $stage = Stage::where('stage', $request->stage)
             ->first();

@@ -42,7 +42,7 @@ Route::group(['prefix' => 'auth'], function () {
 Route::group(['prefix' => 'stage'], function () {
     Route::controller(StageController::class)->group(function () {
         Route::get('index', 'index');
-        Route::post('add', 'add');
+        Route::post('store', 'store');
         Route::post('search', 'search');
         Route::post('update', 'update');
         Route::post('destroy', 'destroy');
@@ -53,8 +53,8 @@ Route::group(['prefix' => 'stage'], function () {
 Route::group(['prefix' => 'year'], function () {
     Route::controller(YearController::class)->group(function () {
         Route::get('index', 'index');
-        Route::post('add', 'add');
-        Route::post('saerch', 'search');
+        Route::post('store', 'store');
+        Route::post('search', 'search');
         Route::post('update', 'update');
         Route::post('destroy', 'destroy');
     });
@@ -73,5 +73,6 @@ Route::group(['prefix' => 'ad'], function () {
     Route::controller(ADController::class)->group(function () {
         Route::get('index', 'index');
         Route::post('show', 'show');
+        Route::post('store', 'store');
     });
 });
