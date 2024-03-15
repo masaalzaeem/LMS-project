@@ -27,7 +27,8 @@ class User extends Authenticatable
         'phone_number',
         'role_id',
         'stage_id',
-        'year_id'
+        'year_id',
+        'device_id'
     ];
 
     /**
@@ -49,7 +50,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
-    
+
     // public function courses()
     // {
     //     return $this->hasMany(Course::class);
