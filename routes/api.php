@@ -5,6 +5,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SMSController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\StageController;
+use App\Http\Controllers\YearController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\ADController;
 
 /*
 |--------------------------------------------------------------------------
@@ -48,7 +51,7 @@ Route::group(['prefix' => 'stage'], function () {
 
 //  years routes
 Route::group(['prefix' => 'year'], function () {
-    Route::controller(AuthController::class)->group(function () {
+    Route::controller(YearController::class)->group(function () {
         Route::get('index', 'index');
         Route::post('add', 'add');
         Route::post('saerch', 'search');
@@ -57,9 +60,17 @@ Route::group(['prefix' => 'year'], function () {
     });
 });
 
+//  role routes
+Route::group(['prefix' => 'role'], function () {
+    Route::controller(RoleController::class)->group(function () {
+        Route::get('index', 'index');
+        Route::post('update', 'update');
+    });
+});
+
 //  ads routes
 Route::group(['prefix' => 'ad'], function () {
-    Route::controller(AuthController::class)->group(function () {
+    Route::controller(ADController::class)->group(function () {
         Route::get('index', 'index');
         Route::post('show', 'show');
     });
