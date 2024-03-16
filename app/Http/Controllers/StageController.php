@@ -53,13 +53,6 @@ class StageController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->role != (1 || 2)) {
-            return response()->json(
-                ['error' => 'Unauthorized'],
-                403
-            );
-        }
-
         $request->validate([
             'stage' => 'required|string'
         ]);
@@ -90,13 +83,6 @@ class StageController extends Controller
     public function update(Request $request)
     {
         $user = Auth::user();
-
-        if ($user->role != (1 || 2)) {
-            return response()->json(
-                ['error' => 'Unauthorized'],
-                403
-            );
-        }
 
         $request->validate([
             'stage' => 'required|exists:stages,stage',
@@ -136,13 +122,6 @@ class StageController extends Controller
     public function destroy(Request $request)
     {
         $user = Auth::user();
-
-        if ($user->role != (1 || 2)) {
-            return response()->json(
-                ['error' => 'Unauthorized'],
-                403
-            );
-        }
 
         $stage = Stage::where('stage', $request->stage)
             ->first();

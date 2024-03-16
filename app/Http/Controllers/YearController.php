@@ -19,8 +19,8 @@ class YearController extends Controller
     //  index all years
     public function index()
     {
-        $Years = Year::all();
-        return response()->json([$Years]);
+        $years = Year::all();
+        return response()->json(['years' => $years]);
     }
 
     //  search for a year
@@ -81,7 +81,7 @@ class YearController extends Controller
     //  update an existing year
     public function update(Request $request)
     {
-        // $user = Auth::user();
+        $user = Auth::user();
 
         $request->validate([
             'year' => 'required|string|exists:years,year',
@@ -123,15 +123,13 @@ class YearController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->role != (1 || 2)) {
-            return response()->json(
-                ['error' => 'Unauthorized'],
-                403
-            );
-        }
-
-        $year = Year::where('Year', $request->Year)
+        $stage = Stage::where('stage', $request->stage)
             ->first();
+
+        $year = Year::where('year', $request->year)
+            ->where('stage_id', $stage->id)
+            ->first();
+
         if ($year) {
             $year->delete();
             return response()->json(

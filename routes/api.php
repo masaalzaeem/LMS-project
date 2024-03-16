@@ -72,7 +72,10 @@ Route::group(['prefix' => 'role'], function () {
 Route::group(['prefix' => 'ad'], function () {
     Route::controller(ADController::class)->group(function () {
         Route::get('index', 'index');
-        Route::post('show', 'show');
+        Route::get('show', 'show');
         Route::post('store', 'store');
+        Route::post('update', 'update');
+        Route::post('setExpired', 'setExpired');
+        Route::post('destroy', 'destroy');
     });
 });

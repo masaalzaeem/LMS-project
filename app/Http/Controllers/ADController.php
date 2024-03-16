@@ -29,14 +29,7 @@ class ADController extends Controller
     //  add a new ad
     public function store(Request $request)
     {
-        // $user = Auth::user();
-
-        // if ($user->role != (1 || 2 || 3)) {
-        //     return response()->json(
-        //         ['error' => 'Unauthorized'],
-        //         403
-        //     );
-        // }
+        $user = Auth::user();
 
         $request->validate([
             'title' => 'required|string|max:255',
@@ -44,14 +37,14 @@ class ADController extends Controller
             'image_data' => 'required',
         ]);
 
-        // Check if year and stage IDs are provided
-        $year = Year::find($request->year_id);
+        $year = Year::where('id', $request->year_id)
+            ->first();
         $stage = null;
         if ($year) {
-            $stage = Stage::find($year->stage_id);
+            $stage = Stage::where('id', $year->stage_id)
+                ->first();
         }
 
-        // Construct ad data
         $adData = [
             'title' => $request->title,
             'description' => $request->description,
@@ -59,65 +52,16 @@ class ADController extends Controller
             'stage_id' => $stage ? $stage->id : null,
         ];
 
-        // Store image if provided
         $image = $request->file('image');
         if ($image) {
             $imageData = base64_encode(file_get_contents($image->path()));
             $adData['image_data'] = $imageData;
         }
 
-        // Create the ad
         $ad = AD::create($adData);
 
-        return response()->json(['message' => 'AD added successfully'], 200);
-    }
-
-
-    // update a price or quantity
-    public function update(Request $request)
-    {
-        $user = Auth::user();
-
-        $request->validate([
-            'adv_name' => 'required|exists:meds,adv_name',
-            'dosage' => 'numeric',
-            'quantity' => 'nullable|numeric|min:0', // Added validation for minimum quantity
-            'price' => 'nullable|numeric|min:0',    // Added validation for minimum price
-        ]);
-
-        $medicine = Med::where('adv_name', $request->adv_name)
-            ->where('dosage', optional($request)->dosage)
-            ->where('store_name', $user->store_name)
-            ->where('expiration_date', $request->expiration_date)
-            ->first();
-
-        if (!$medicine) {
-            return response()->json(
-                ['error' => 'Medicine not found'],
-                404
-            );
-        }
-
-        // Check if the authenticated user is the owner of the medicine
-        if ($user->store_name != $medicine->store_name) {
-            return response()->json(
-                ['error' => 'Unauthorized'],
-                403
-            );
-        }
-
-        if ($request->has('quantity')) {
-            $medicine->quantity = $request->quantity;
-        }
-
-        if ($request->has('price')) {
-            $medicine->price = $request->price;
-        }
-
-        $medicine->save();
-
         return response()->json(
-            ['message' => 'Medicine updated successfully'],
+            ['message' => 'AD added successfully'],
             200
         );
     }
@@ -125,11 +69,14 @@ class ADController extends Controller
     //  show last 6 ads added
     public function show()
     {
-        $newestAD = AD::orderBy('id', 'desc')->first(); // gets the whole row
+        $newestAD = AD::orderBy('id', 'desc')
+            ->first();
         $maxValue = $newestAD->id;
         $newestADs = [];
         for ($i = 0; $i < 6; $i++) {
-            $ad = AD::where('id', $maxValue)->first();
+            $ad = AD::where('id', $maxValue)
+                ->first();
+
             if ($ad && $ad->isExpired == 0) {
                 $newestADs[$i] = $ad;
                 $maxValue--;
@@ -146,27 +93,102 @@ class ADController extends Controller
         );
     }
 
-    //  update an ad
-    // public function update(Request $request){
+    // update an ad
+    public function update(Request $request)
+    {
+        $user = Auth::user();
 
-    //     $request->validate([
-    //         'ad_id' => 'required|numeric'
-    //     ]);
+        $request->validate([
+            'ad_id' => 'required|exists:a_d_s,id|numeric',
+            'title' => 'string|max:255',
+            'description' => 'string',
+            'image_data' => 'image',
+            'year' => 'string'
+        ]);
 
-    //     $ad = AD::where('id', $request->ad_id)
-    //         ->first();
+        $year = Year::where('year', $request->year)
+            ->first();
 
+        $ad = AD::where('id', $request->ad_id)
+            ->first();
 
-    // }
+        if (
+            $request->filled('title') &&
+            $ad->title !== $request->title
+        ) {
+            $ad->title = $request->title;
+        }
 
+        if (
+            $request->filled('description') &&
+            $ad->description !== $request->description
+        ) {
+            $ad->description = $request->description;
+        }
+
+        if (
+            $request->filled('year') &&
+            $ad->year_id !== $year->id
+        ) {
+            $ad->year_id = $year->id;
+            $ad->stage_id = $year->stage_id;
+        }
+
+        if ($request->hasFile('image_data')) {
+            $image = $request->file('image_data');
+            $imageData = base64_encode(file_get_contents($image->path()));
+            $ad->image_data = $imageData;
+        }
+
+        if (!$ad->isDirty()) {
+            return response()->json(
+                ['error' => 'Nothing to update'],
+                400
+            );
+        }
+
+        $ad->save();
+
+        return response()->json(
+            ['message' => 'Ad updated successfully'],
+            200
+        );
+    }
 
     //  set the ad to be expired
-    public function setExpired()
+    public function setExpired(Request $request)
     {
+        $ad = AD::where('id', $request->ad_id)
+            ->first();
+        if ($ad && $ad->isExpired == 0) {
+            $ad->isExpired = 1;
+            $ad->save();
+            return response()->json(
+                ['message' => 'ad is now set to expired!'],
+                200
+            );
+        }
+        return response()->json(
+            ['error' => 'ad is already expired!'],
+            404
+        );
     }
 
     // delete an ad
-    public function destroy()
+    public function destroy(Request $request)
     {
+        $ad = AD::where('id', $request->ad_id)
+            ->first();
+        if ($ad){
+            $ad->delete();
+            return response()->json(
+                ['message' => 'ad deleted successfully'],
+                200
+            );
+        }
+        return response()->json(
+            ['error' => 'ad not found'],
+            404
+        );
     }
 }
